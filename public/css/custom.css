@@ -1,0 +1,43 @@
+.custom-nav {
+    font-weight: bolder;
+}
+
+.nav-link {
+    color: black !important;
+}
+
+.nav-link:hover{
+    color: white !important;
+}
+
+.custom-nav-back {
+    background-color: #ff000080 !important;
+}
+
+#footer {
+    position: relative;
+    width: 100%;
+    bottom: 0;
+    height: 50px;
+    background-color: #dc6262 !important;
+}
+
+.container-wrap {
+    position: relative;
+    min-height: 80vh;
+    background-color: #dcbbbb;
+}
+
+.btn {
+    border-radius: 20px;
+}
+
+.card-custom {
+    background-color: #ded3d3;
+    border-radius: 3.25rem;
+}
+
+.card-header {
+    text-align: center;
+    background-color: transparent;
+}
