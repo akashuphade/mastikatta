@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 use Illuminate\Http\Request;
 use App\Models\Question;
@@ -26,6 +28,16 @@ class ResponseController extends Controller
         return view('home')->with('responses', $responses);
     }
 
+
+
+    public function show($id) 
+    {
+        
+        $response = ResponseMaster::where('id', '=', $id)->with('details.question')->get();
+        return view('responses.show')->with('response', $response);
+    }
+
+
     /**
      * Get slambook welcome page to get the friends basic info
      * 
@@ -33,6 +45,13 @@ class ResponseController extends Controller
      */
     public function getWelcomePage(Request $request, $userId)
     {
+        //Decrypt the userID passed in the url 
+        try {
+            $userId = Crypt::decrypt($userId);    
+        } catch (DecryptException $th) {
+            return redirect('error')->with('success', 'Link is not valid');
+        }
+        
         //Check current session has userId and it is same as passed one
         if(empty($request->session()->has('userId')) || $request->session()->get('userId', 'default') != $userId) {
             
@@ -75,8 +94,37 @@ class ResponseController extends Controller
             $pages = (int)ceil($totalRecords/$this->limit);
             $request->session()->put('totalPages', $pages);
         }
+
+        //If it is final page then save all the data
+        if ($currentPage > $request->session()->get('totalPages', 'default')) {
+
+            //First save data in master table
+            $responseMaster = new ResponseMaster();
+            $responseMaster->name = $request->session()->get('name', 'default');
+            $responseMaster->email = $request->session()->get('email', 'default');
+            $responseMaster->user_id = $request->session()->get('userId', 'default');
+            $responseMaster->save();
+
+            //Get the id of last saved entry
+            $masterId = $responseMaster->id;
+
+            //Save the data in the details table
+            $questionsToSave = Question::where('visible', '=', '1')->orderBy('id', 'asc')->get();
+            
+            foreach($questionsToSave as $question) {
+            
+                $responseDetail = new ResponseDetail();
+                $responseDetail->response_master_id = $masterId;
+                $responseDetail->question_id = $question->id;
+                $responseDetail->answer = $request->session()->get('q_'.$question->id, 'default');
+                $responseDetail->save();
+            }
+            
+            return redirect('responses/final');
+        } else {
+            $questions = Question::orderBy('id', 'asc')->offset($offset)->limit($this->limit)->get();
+        }
         
-        $questions = Question::orderBy('id', 'asc')->offset($offset)->limit($this->limit)->get();
         return view('responses.slambook')->with('questions', $questions);
     }
 
@@ -132,34 +180,9 @@ class ResponseController extends Controller
         //validate the data
         $this->validate($request, $rules, $customMessages);
 
-        //Save questions data
+        //Store the question responses in the session data
         foreach($questions as $question) {
-            //Save the page data 
-            $response = new ResponseDetail();
-            $response->response_master_id = $request->session()->get('master_id', 'default');
-            $response->question_id = $question->id;
-
-            //If image of attached then save it to storage
-            if($question->type =='file') {
-                //Get the original file name
-                $filenameWithExtension = $request->file('q_'.$question->id)->getClientOriginalName();
-
-                //Extract only file name 
-                $filename = pathinfo($filenameWithExtension, PATHINFO_FILENAME);
-
-                //Extract the extension
-                $extension = pathinfo($filenameWithExtension, PATHINFO_EXTENSION);
-
-                $fileNameToStore = $filename . '_' . time() . "." .$extension;
-
-                //Save the image
-                $request->file('q_'.$question->id)->storeAs('public/profile_photos', $fileNameToStore);
-                
-                $response->answer = $fileNameToStore;
-            } else {
-                $response->answer = $request->input('q_'.$question->id);
-            }
-            $response->save();
+            $request->session()->put('q_'.$question->id, $request->input('q_'.$question->id));
         }
 
         switch ($action) {
@@ -193,14 +216,11 @@ class ResponseController extends Controller
                 'email' => 'required|email|unique:response_masters,email'            ]
         );
         
-        $response = new ResponseMaster();
-        $response->name = $request->input('name');
-        $response->email = $request->input('email');
-        $response->user_id = $request->session()->get('userId', 'default');
-
-        $response->save();
-        $request->session()->put('master_id', $response->id);
-
+        
+        $request->session()->put('name', $request->input('name'));
+        $request->session()->put('email', $request->input('email'));
+        
         return redirect('slambook');
     }
+
 }

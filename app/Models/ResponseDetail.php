@@ -10,4 +10,10 @@ class ResponseDetail extends Model
     {
         return $this->belongsTo('App\Models\ResponseMaster');
     }
+
+
+    public function question() 
+    {
+        return $this->hasOne('App\Models\Question', 'id', 'question_id');
+    }
 }

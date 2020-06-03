@@ -17,7 +17,7 @@
 
                             <div class="col-md-6">
                                 @if ($question->type == 'longtext')
-                                    <textarea class="form-control @error('q_'.$question->id) is-invalid @enderror" id="q_{{$question->id}}" name="q_{{$question->id}}" rows=2></textarea>
+                                    <textarea class="form-control @error('q_'.$question->id) is-invalid @enderror" id="q_{{$question->id}}" name="q_{{$question->id}}" rows=2>{{old('q_'.$question->id)}}</textarea>
                                 @else 
                                     <input type="{{$question->type}}" class="form-control @error('q_'.$question->id) is-invalid @enderror" id="q_{{$question->id}}" name="q_{{$question->id}}" value="{{ old('q_'.$question->id) }}">
                                 @endif
@@ -37,7 +37,7 @@
                         <!--<button type="button" class="btn btn-primary" onClick="goToPrevious();">Previous</button> -->
                     @endif
                     @if (session('currentPage') < session('totalPages'))
-                        <button type="submit" class="btn btn-primary ml-1">Next</button>
+                        <button type="submit" class="btn btn-primary ml-1">Continue</button>
                     @endif
                     @if (session('currentPage') == session('totalPages'))
                         <div class="ml-1">        

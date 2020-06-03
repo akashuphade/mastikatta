@@ -8,6 +8,7 @@
                 <div class="card-header">
                     <h1>Slambook responses</h1>
                     <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Share with your friends</button>
+                    <a href="whatsapp://send?text={{Request::getHost()}}/slambook/welcome/{{Crypt::encrypt(Auth::user()->id)}}" data-action="share/whatsapp/share"><img src="/storage/whatsapp.png" alt="whatsApp" height="50px"></a>
                 </div>
 
                 @if (count($responses) > 0)
@@ -25,7 +26,7 @@
                                 <tr>
                                     <td><a href="">{{$response->name}}</a></td>
                                     <td>{{$response->email}}</td>
-                                    <td><a href="" class="btn btn-sm btn-primary">View</a></td>
+                                    <td><a href="slambook/response/{{$response->id}}" class="btn btn-sm btn-primary">View</a></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -50,7 +51,7 @@
                             <div class="modal-body">
                                 <strong class="text-info">Copy below link to share with your friends</strong>
                                 <br>
-                                <input type="text" id="link-to-share" name="link" class="w-75" value="http://dev.mastikatta.ak/slambook/welcome/{{Auth::user()->id}}">
+                                <input type="text" id="link-to-share" name="link" class="w-75" value="http://{{Request::getHost()}}/slambook/welcome/{{Crypt::encrypt(Auth::user()->id)}}">
                                 <button type="button" onClick="copyToClipboard('link-to-share');">Copy</button>
                             </div>
 

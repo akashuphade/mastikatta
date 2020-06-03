@@ -30,7 +30,6 @@
                                 <option value="longtext">Longtext</option>
                                 <option value="date">Date</option>
                                 <option value="email">E-mail</option>
-                                <option value="file">File</option>
                             </select>
 
                             @error('type')
